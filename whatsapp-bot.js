@@ -1,12 +1,15 @@
 const { default: makeWASocket, DisconnectReason, useMultiFileAuthState } = require('@whiskeysockets/baileys');
 const { createClient } = require('@supabase/supabase-js');
 const pino = require('pino');
-const qrcode = require('qrcode-terminal');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY
 );
+
+// ⚠️ PUT YOUR PHONE NUMBER HERE (with country code, no + or spaces)
+// Example for India: 919876543210
+const PHONE_NUMBER = process.env.PHONE_NUMBER || '';
 
 let myNumber = '';
 
@@ -15,18 +18,26 @@ async function connectWhatsApp() {
 
   const sock = makeWASocket({
     auth: state,
-    logger: pino({ level: 'silent' })
+    logger: pino({ level: 'silent' }),
+    printQRInTerminal: false
   });
 
   sock.ev.on('creds.update', saveCreds);
 
-  sock.ev.on('connection.update', (update) => {
+  sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
 
-    if (qr) {
-      console.log('\n\n===== SCAN THIS QR CODE WITH WHATSAPP =====\n');
-      qrcode.generate(qr, { small: true });
-      console.log('\n===========================================\n');
+    if (qr && PHONE_NUMBER) {
+      try {
+        const code = await sock.requestPairingCode(PHONE_NUMBER);
+        console.log('\n\n========================================');
+        console.log('WHATSAPP PAIRING CODE: ' + code);
+        console.log('========================================');
+        console.log('Go to WhatsApp > Linked Devices > Link with phone number');
+        console.log('Enter the code above\n');
+      } catch (e) {
+        console.log('Error getting pairing code:', e.message);
+      }
     }
 
     if (connection === 'close') {
@@ -141,4 +152,4 @@ async function checkAndSendReminders(sock) {
 }
 
 connectWhatsApp();
-  
+    
