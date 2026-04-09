@@ -1,7 +1,6 @@
 {
   "name": "whatsapp-reminder-bot",
   "version": "1.0.0",
-  "description": "WhatsApp reminder bot using Green API",
   "main": "whatsapp-bot.js",
   "scripts": {
     "start": "node whatsapp-bot.js"
