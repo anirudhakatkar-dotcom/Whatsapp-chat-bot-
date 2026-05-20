@@ -30,6 +30,8 @@ async function sendMessage(phone, text) {
 
 async function checkAndSendReminders() {
   console.log('Checking reminders...');
+  const currentHour = new Date().getHours();
+  if (currentHour !== 5) { console.log('Not 5 AM, skipping...'); return; }
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayStr = today.toISOString().split('T')[0];
